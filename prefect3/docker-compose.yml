@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  prefect-server:
+    container_name: prefect-server
+    image: prefecthq/prefect:3.2.10-python3.10
+    command: prefect server start --host 0.0.0.0
+    ports:
+      - "4200:4200"
+    environment:
+      PREFECT_API_DATABASE_CONNECTION_URL: "sqlite+aiosqlite:///./prefect.db"
+
+  flow-worker:
+    container_name: worker
+    build: .
+    environment:
+      PREFECT_API_URL: "http://172.31.156.146:4200/api"
+    depends_on:
+      - prefect-server

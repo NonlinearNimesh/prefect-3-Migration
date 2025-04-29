@@ -1,0 +1,28 @@
+prefect-version: 3.0.0
+name: my-prefect-project
+dependencies:
+  - requirements.txt
+flows:
+  - entrypoint: src/flows/simple_flow.py
+    name: simple-flow
+    version: 1.0
+    work_pool:
+      name: my-docker-pool
+      work_queue_name: default
+      job_variables: {}
+    parameters: {}
+
+  - entrypoint: src/flows/image_processing_flow.py
+    name: image-processing-flow
+    version: 1.0
+    work_pool:
+      name: my-docker-pool
+      work_queue_name: default
+      job_variables: {}
+    parameters: {}
+
+infrastructure:
+  type: process
+  env: {}
+  labels: []
+  name: process-infra

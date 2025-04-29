@@ -1,50 +1,68 @@
 import os
 import yaml
-from pathlib import Path
 
-def get_flow_files(flows_dir):
-    return [f for f in Path(flows_dir).glob("*.py") if f.is_file()]
+# Configuration
+flows_dir = "src/flows"
+prefect_yaml_path = "prefect.yaml"
+work_pool_name = "my-docker-pool"
 
-def snake_to_kebab(s):
-    return s.replace("_", "-")
+# Helper to generate flow and deployment entries
+def generate_entries():
+    flow_entries = []
+    deployment_entries = []
 
-def build_prefect_yaml(flows_dir="src/flows", schedule_interval=10):
-    flow_files = get_flow_files(flows_dir)
+    for filename in os.listdir(flows_dir):
+        if filename.endswith(".py"):
+            flow_name = filename.replace(".py", "")
+            entrypoint = f"{flows_dir}/{filename}"
+            queue_name = f"{flow_name}-queue"
+            deployment_name = f"{flow_name}-deployment"
 
-    flows = []
-    deployments = []
+            # Flow entry
+            flow_entries.append({
+                "entrypoint": entrypoint,
+                "name": flow_name,
+                "version": "1.0",
+                "work_pool": {
+                    "name": work_pool_name,
+                    "work_queue_name": queue_name,
+                    "job_variables": {}
+                }
+            })
 
-    for file in flow_files:
-        flow_name = file.stem
-        queue_name = f"{flow_name}-queue"
-        deployment_name = f"{flow_name}-deployment"
-
-        flows.append({
-            "entrypoint": f"{flows_dir}/{file.name}",
-            "name": flow_name,
-            "version": "1.0",
-            "work_pool": {
-                "name": "my-docker-pool",
-                "work_queue_name": queue_name,
-                "job_variables": {}
+            # Deployment entry
+            deployment = {
+                "name": deployment_name,
+                "entrypoint": f"{entrypoint}:{flow_name}",
+                "work_pool": {
+                    "name": work_pool_name,
+                    "work_queue_name": queue_name
+                },
+                "pull": [
+                {
+                    "prefect.deployments.steps.set_working_directory": {
+                        "directory": "/app/src"
+                    }
+                }
+            ]
             }
-        })
 
-        deployments.append({
-            "name": deployment_name,
-            "entrypoint": f"{flows_dir}/{file.name}:{flow_name}",
-            "work_pool": {
-                "name": "my-docker-pool",
-                "work_queue_name": queue_name
-            },
-            "pull": False,
-            "schedule": {
-                "interval": schedule_interval,
-                "active": True
-            }
-        })
+            # Skip scheduling if the flow is job_flow
+            if flow_name != "job_flow":
+                deployment["schedule"] = {
+                    "interval": 10,
+                    "active": True
+                }
 
-    prefect_yaml = {
+            deployment_entries.append(deployment)
+
+    return flow_entries, deployment_entries
+
+# Generate and write prefect.yaml
+def generate_prefect_yaml():
+    flows, deployments = generate_entries()
+
+    prefect_config = {
         "prefect-version": "3.0.0",
         "name": "my-prefect-project",
         "dependencies": ["requirements.txt"],
@@ -58,11 +76,8 @@ def build_prefect_yaml(flows_dir="src/flows", schedule_interval=10):
         }
     }
 
-    with open("prefect.yaml", "w") as f:
-        yaml.dump(prefect_yaml, f, sort_keys=False)
+    with open(prefect_yaml_path, "w") as f:
+        yaml.dump(prefect_config, f, sort_keys=False)
 
-    print("✅ Generated prefect.yaml")
-
-if __name__ == "__main__":
-    build_prefect_yaml()
+generate_prefect_yaml()
 

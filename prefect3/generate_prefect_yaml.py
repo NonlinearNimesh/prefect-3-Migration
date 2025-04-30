@@ -41,17 +41,17 @@ def generate_entries():
                 "pull": [
                 {
                     "prefect.deployments.steps.set_working_directory": {
-                        "directory": "/app/src"
+                        "directory": "/app"
                     }
                 }
             ]
             }
 
             # Skip scheduling if the flow is job_flow
-            if flow_name != "job_flow":
+            if True: #flow_name != "job_flow":
                 deployment["schedule"] = {
                     "interval": 10,
-                    "active": True
+                    "active": False
                 }
 
             deployment_entries.append(deployment)
@@ -80,4 +80,3 @@ def generate_prefect_yaml():
         yaml.dump(prefect_config, f, sort_keys=False)
 
 generate_prefect_yaml()
-

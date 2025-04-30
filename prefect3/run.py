@@ -2,6 +2,7 @@ import asyncio
 from prefect.client import get_client
 from prefect.deployments import run_deployment
 import os
+
 async def trigger_job_flow(job_id: str):
     os.environ["PREFECT_API_URL"] = "http://prefect-server:4200/api"
 

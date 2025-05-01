@@ -17,3 +17,23 @@ services:
       PREFECT_API_URL: "http://172.31.156.146:4200/api"
     depends_on:
       - prefect-server
+
+  flow-deployer:
+    build: .
+    container_name: flow-deployer
+    depends_on:
+      - prefect-server
+    entrypoint: >
+      sh -c "
+        echo 'Waiting for Prefect server to become healthy...';
+        until curl -s http://prefect-server:4200/api/health | grep true > /dev/null; do
+          echo 'Prefect server is unavailable - sleeping';
+          sleep 2;
+        done;
+        echo 'Prefect server is healthy. Generating and deploying flows...';
+        sleep 10;
+        python generate_prefect_yaml.py && prefect deploy --all;
+        echo 'Flow deployment complete.'"
+    environment:
+      PREFECT_API_URL: "http://prefect-server:4200/api"
+

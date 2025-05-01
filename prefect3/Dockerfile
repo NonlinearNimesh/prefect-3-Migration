@@ -3,6 +3,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY . /app/
+RUN apt-get update && apt-get install -y curl && apt-get clean
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 RUN pip install prefect>=3.0.0
@@ -10,3 +11,5 @@ ENV PREFECT_API_URL="http://172.31.156.146:4200/api"
 #RUN prefect project init --force
 #CMD ["prefect", "worker", "start", "--pool", "my-docker-pool"]
 CMD ["sh", "-c", "python generate_prefect_yaml.py && prefect worker start --pool my-docker-pool"]
+
+

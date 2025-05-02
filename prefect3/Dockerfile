@@ -12,4 +12,3 @@ ENV PREFECT_API_URL="http://172.31.156.146:4200/api"
 #CMD ["prefect", "worker", "start", "--pool", "my-docker-pool"]
 CMD ["sh", "-c", "python generate_prefect_yaml.py && prefect worker start --pool my-docker-pool"]
 
-

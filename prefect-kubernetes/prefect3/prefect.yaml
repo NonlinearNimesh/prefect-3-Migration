@@ -1,0 +1,39 @@
+prefect-version: 3.0.0
+name: my-prefect-project
+dependencies:
+- requirements.txt
+
+flows:
+- entrypoint: src/flows/job_flow.py
+  name: job_flow
+  version: '1.0'
+  work_pool:
+    name: my-k8s-pool
+    work_queue_name: job_flow-queue
+    job_variables: {}
+
+deployments:
+- name: job_flow-deployment
+  entrypoint: src/flows/job_flow.py:job_flow
+  work_pool:
+    name: my-k8s-pool
+    work_queue_name: job_flow-queue
+    job_variables:
+      image: prefecthq/prefect:3.2.10-python3.10
+      blockName: prefect-k8s-block
+  pull:
+  - prefect.deployments.steps.set_working_directory:
+      directory: /app
+  schedule:
+    interval: 10
+    active: false
+  version:
+  tags: []
+  concurrency_limit:
+  description:
+  parameters: {}
+  schedules:
+  - interval: 10.0
+    anchor_date: '2025-05-05T17:58:21.761020+00:00'
+    timezone: UTC
+    active: false

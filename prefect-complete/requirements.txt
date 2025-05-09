@@ -1,0 +1,4 @@
+prefect==3.4.0
+prefect[docker]
+prefect[kubernetes]
+kubernetes

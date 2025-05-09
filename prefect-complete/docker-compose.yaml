@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  prefect-server:
+    container_name: prefect-server
+    image: caringdockers/prefect3:v1.0.13
+    command: prefect server start --host 0.0.0.0
+    ports:
+      - "4200:4200"
+    environment:
+      PREFECT_API_DATABASE_CONNECTION_URL: "postgresql+asyncpg://prefect:prefectpassword@postgres:5432/prefectdb"
+    depends_on:
+      - postgres
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - carpl_docker_backend
+
+  flow-worker:
+    container_name: worker
+    image: caringdockers/prefect3:v1.0.13
+    command: /bin/bash -c "./entrypoint.sh"
+    environment:
+      PREFECT_API_URL: "http://172.31.156.146:4200/api"
+    env_file: .env
+    depends_on:
+      - prefect-server
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - carpl_docker_backend
+
+  flow-deployer:
+    image: caringdockers/prefect3:v1.0.13
+    container_name: flow-deployer
+    command: /bin/bash -c "./entrypoint.sh"
+    depends_on:
+      - prefect-server
+    env_file: .env
+    entrypoint: >
+      sh -c "
+        echo 'Waiting for Prefect server to become healthy...';
+        until curl -s http://prefect-server:4200/api/health | grep true > /dev/null; do
+          echo 'Prefect server is unavailable - sleeping';
+          sleep 2;
+        done;
+        echo 'Prefect server is healthy. Generating and deploying flows...';
+        sleep 10;
+        python generate_prefect_yaml.py && prefect deploy --all;
+        echo 'Flow deployment complete.'"
+    environment:
+      PREFECT_API_URL: "http://prefect-server:4200/api"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - carpl_docker_backend
+
+  postgres:
+    container_name: postgres
+    image: postgres:14
+    environment:
+      POSTGRES_USER: prefect
+      POSTGRES_PASSWORD: prefectpassword
+      POSTGRES_DB: prefectdb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - carpl_docker_backend
+
+volumes:
+  postgres-data:
+    driver: local
+
+networks:
+  carpl_docker_backend:
+    driver: bridge

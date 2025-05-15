@@ -3,6 +3,8 @@ import asyncio
 from prefect.client.orchestration import get_client
 from prefect.client.schemas.actions import WorkPoolCreate
 
+os.environ["PREFECT_API_URL"] = "http://prefect-server.carpl.svc.cluster.local:4200/api"
+
 # Load config from environment variables
 work_pool_name = os.getenv("WORK_POOL_NAME", "Kubernetes")
 namespace = os.getenv("K8S_NAMESPACE", "namespace-prefect")

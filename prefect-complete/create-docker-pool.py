@@ -4,11 +4,14 @@ import json
 from prefect.client.orchestration import get_client
 from prefect.client.schemas.actions import WorkPoolCreate
 
+os.environ["PREFECT_API_URL"] = "http://host.docker.internal:4200/api"
+
+
 async def create_or_overwrite_docker_pool():
     # Get values from environment variables
     work_pool_name = os.getenv('WORK_POOL_INFRA', 'Docker')  # Default to 'Docker' if not set
 
-    image_value = os.getenv('WORKER_IMAGE', 'caringdockers/prefect3:v1.0.7')
+    image_value = os.getenv('WORKER_IMAGE', 'caringdockers/prefect3:v1.0.13')
     env_value = os.getenv('DOCKER_ENV', '{"MY_ENV_VAR": "example"}')
     labels_value = os.getenv('DOCKER_LABELS', '{"env": "test"}')
     volumes_value = os.getenv('DOCKER_VOLUMES', '["/var/run/docker.sock:/var/run/docker.sock"]')

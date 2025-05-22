@@ -5,6 +5,7 @@ import os
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 
+
 async def trigger_job_flow(job_id: str):
     os.environ["PREFECT_API_URL"] = "http://prefect-server:4200/api"
 

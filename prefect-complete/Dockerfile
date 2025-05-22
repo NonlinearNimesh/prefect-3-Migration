@@ -16,13 +16,6 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh \
  && apt-get update && apt-get install -y curl && apt-get clean
 
-# Install system dependencies including Docker CLI
-#RUN apt-get update && \
-#    apt-get install -y curl docker.io && \
-#    apt-get clean
-
 # Install Python dependencies
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Entry point to support dynamic logic via env vars
-# ENTRYPOINT ["/entrypoint.sh"]

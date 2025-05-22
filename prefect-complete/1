@@ -3,14 +3,12 @@ version: '3.8'
 services:
   prefect-server:
     container_name: prefect-server
-    image: caringdockers/prefect3:v1.0.59
+    image: caringdockers/prefect3:v1.0.47
     command: prefect server start --host 0.0.0.0
     ports:
       - "4200:4200"
     environment:
       PREFECT_API_DATABASE_CONNECTION_URL: "postgresql+asyncpg://prefect:prefectpassword@postgres:5432/prefectdb"
-      PREFECT_API_URL: "http://localhost:4200/api"
-      PREFECT_UI_URL: "http://localhost:4200"
     depends_on:
       - postgres
     volumes:
@@ -20,7 +18,7 @@ services:
 
   flow-worker:
     container_name: worker
-    image: caringdockers/prefect3:v1.0.59
+    image: caringdockers/prefect3:v1.0.47
     command: /bin/bash -c "./entrypoint.sh"
     environment:
       PREFECT_API_URL: "http://prefect-server:4200/api"

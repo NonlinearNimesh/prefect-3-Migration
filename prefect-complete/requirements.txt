@@ -2,3 +2,17 @@ prefect==3.4.0
 prefect[docker]
 prefect[kubernetes]
 kubernetes
+boto3
+requests
+botocore
+tqdm
+pillow
+pydicom
+minio
+python-logstash
+google-cloud-storage
+google-auth
+google-auth-oauthlib
+python-dotenv
+setuptools
+
